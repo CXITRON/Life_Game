@@ -21,24 +21,25 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
         run: |
-          # 이벤트 페이로드에서 정보 추출
-          COMMIT_MSG=$(jq -r .head_commit.message < "$GITHUB_EVENT_PATH")
-          COMMIT_URL=$(jq -r .head_commit.url     < "$GITHUB_EVENT_PATH")
-          COMMIT_AUTHOR=$(jq -r .head_commit.author.name < "$GITHUB_EVENT_PATH")
-          BRANCH=${GITHUB_REF#refs/heads/}
+          #--- 변수 추출
+          repo="$GITHUB_REPOSITORY"
+          branch=${GITHUB_REF#refs/heads/}
+          author=$(jq -r .head_commit.author.name < "$GITHUB_EVENT_PATH")
+          msg=$(jq -r .head_commit.message     < "$GITHUB_EVENT_PATH")
+          url=$(jq -r .head_commit.url         < "$GITHUB_EVENT_PATH")
 
-          # jq 변수 보간을 이용해 JSON 페이로드 생성
-          PAYLOAD=$(jq -n \
-            --arg repo "$GITHUB_REPOSITORY" \
-            --arg branch "$BRANCH" \
-            --arg author "$COMMIT_AUTHOR" \
-            --arg msg "$COMMIT_MSG" \
-            --arg url "$COMMIT_URL" \
-            '{content: "**🚀 [\($repo):\($branch)]** \($author) pushed a new commit\n> \($msg)\n🔗 \($url)"}'
+          #--- jq 보간으로 JSON 생성
+          payload=$(jq -n \
+            --arg r "$repo" \
+            --arg b "$branch" \
+            --arg a "$author" \
+            --arg m "$msg" \
+            --arg u "$url" \
+            '{content:"**🚀 [\($r):\($b)]** \($a) pushed a new commit\n> \($m)\n🔗 \($u)"}'
           )
 
-          # Discord로 전송
+          #--- 전송
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d "$PAYLOAD" \
+               -d "$payload" \
                "$DISCORD_WEBHOOK_URL"
