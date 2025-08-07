@@ -17,4 +17,3 @@ jobs:
                -X POST \
                -d "{\"content\": \"🚀 커밋이 main 브랜치에 푸시되었습니다!\"}" \
                \"$DISCORD_WEBHOOK_URL\"
-
