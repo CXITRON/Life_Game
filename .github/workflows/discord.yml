@@ -1,25 +1,35 @@
-name: Discord Notification via Secret
+name: Discord Notification (Enhanced)
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord webhook from secret
+      - name: Send enhanced Discord webhook
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          # (1) JSON 페이로드 준비
+          # 이벤트 페이로드에서 정보 추출
+          COMMIT_MSG=$(jq -r .head_commit.message < "$GITHUB_EVENT_PATH")
+          COMMIT_URL=$(jq -r .head_commit.url     < "$GITHUB_EVENT_PATH")
+          COMMIT_AUTHOR=$(jq -r .head_commit.author.name < "$GITHUB_EVENT_PATH")
+          BRANCH=${GITHUB_REF#refs/heads/}
+
+          # 알림 JSON 생성
           PAYLOAD=$(jq -n \
-            --arg msg "🚀 커밋 by $GITHUB_ACTOR: $GITHUB_SHA" \
-            '{content: $msg}')
-          
-          # (2) curl로 Webhook 호출
-          curl -sS -H "Content-Type: application/json" \
+            --arg repo "$GITHUB_REPOSITORY" \
+            --arg branch "$BRANCH" \
+            --arg author "$COMMIT_AUTHOR" \
+            --arg msg "$COMMIT_MSG" \
+            --arg url "$COMMIT_URL" \
+            '{content: "🚀 **[$repo:$branch]** $author pushed a new commit\n> $msg\n🔗 $url"}'
+          )
+
+          # 디스코드로 전송
+          curl -H "Content-Type: application/json" \
                -X POST \
                -d "$PAYLOAD" \
                "$DISCORD_WEBHOOK_URL"
