@@ -9,7 +9,10 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord notification
-        uses: Ilshidur/action-discord@master
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+      - name: Send Discord message
+        run: |
+          curl -X POST \
+          -H "Content-Type: application/json" \
+          -d "{\"content\": \"🚀 커밋이 푸시되었습니다!\"}" \
+          https://discord.com/api/webhooks/여기에_너의_WEBHOOK_ID
+
