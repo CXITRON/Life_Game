@@ -1,4 +1,4 @@
-name: Discord Notification
+name: Discord Webhook (via curl)
 
 on:
   push:
@@ -6,13 +6,15 @@ on:
       - main
 
 jobs:
-  notify:
+  send-discord-message:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Discord message
+      - name: Send Discord webhook
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          curl -X POST \
-          -H "Content-Type: application/json" \
-          -d "{\"content\": \"🚀 커밋이 푸시되었습니다!\"}" \
-          https://discord.com/api/webhooks/여기에_너의_WEBHOOK_ID
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"content\": \"🚀 커밋이 main 브랜치에 푸시되었습니다!\"}" \
+               \"$DISCORD_WEBHOOK_URL\"
 
