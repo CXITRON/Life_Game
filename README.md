@@ -26,3 +26,17 @@ This project is a Flutter application. To run it locally:
    ```
 
 it finally works!
+
+## Command-line game
+
+A simple Python-based life simulator is included:
+
+```bash
+python life_game.py
+```
+
+Run its tests with:
+
+```bash
+pytest test/life_game_test.py
+```
